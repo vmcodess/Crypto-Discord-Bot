@@ -17,69 +17,50 @@ function readyDiscord() {
 
 //prints the users message content
 client.on('message', message => {
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
     if (message.content.startsWith(`${prefix}`)) {
-        let symbol = message.content;
-        console.log(symbol);
+        let args = message.content.slice(prefix.length).trim().split(' ');
+        let command = args.shift().toUpperCase();
+        console.log(command);
+
+        axios({
+            method: 'get',
+            url: 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest',
+            qs: {
+                'start': '1',
+                'limit': '5000',
+                'convert': 'USD'
+            },
+            headers: {
+                'X-CMC_PRO_API_KEY': process.env.COIN_MARKET_CAP_API
+            },
+            json: true,
+            gzip: true
+        })
+        .then((res) => {
+            let data = res.data.data;
+
+            for (let i of data) {
+                if (i.symbol == command) {
+                    //console.log(i)
+                    //console.log(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price.toFixed(2)}`);
+                    
+                    message.channel.send(`Crypto = ${i.symbol} and current price is: $${i.quote.USD.price.toFixed(2)} USD`)
+                } //else {
+                    //message.channel.send('Not Found.. Please Try Again :)');
+                    //console.log('try again')
+                //}
+            }
+        })
+        .catch((err) => {
+            console.log(`err calling API: ${err}`);
+        })
     }
 })
 
 
-axios({
-    method: 'get',
-    url: 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest',
-    qs: {
-        'start': '1',
-        'limit': '5000',
-        'convert': 'USD'
-    },
-    headers: {
-        'X-CMC_PRO_API_KEY': process.env.COIN_MARKET_CAP_API
-    },
-    json: true,
-    gzip: true
-})
-.then((res => {
-    // res.data.data[0].quote.USD.price -> GETS THE PRICE OF BTC
-    let cryptoSymbol = 'BTC';
 
-    let data = res.data.data;
-
-    // function to iterate through data and return values
-    //let returnSymbolPrice = function()
-
-    // save discord users value
-    // client.on('message', message => {
-    //     if (!message.content.startsWith(prefix) || message.author.bot) return;
-    //     if (message.content.startsWith(`${prefix}`)) {
-    //         cryptoSymbol = message.content;
-    //     }
-
-    //     for (let i of data) {
-    //         if (i.symbol.toLowerCase() == cryptoSymbol.toLowerCase()) {
-    //             console.log(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price}`);
-    //             //message.channel.send(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price}`)
-    //         }
-    //     }
-    // })
-    for (let i of data) {
-        //console.log(i)
-        if (i.symbol.toLowerCase() == cryptoSymbol.toLowerCase()) {
-            //console.log(i)
-            console.log(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price}`);
-            
-            client.on('message', message => {
-                message.channel.send(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price}`)
-            } )
-        } else {
-            client.on('message', message => {
-                message.channel.send('Not Found.. Please Try Again :)');
-            })
-        }
-    }
-}))
-.catch((err) => {
-    console.log(err);
-})
 
 
 // ----------- ROUTES -----------
