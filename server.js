@@ -45,7 +45,13 @@ client.on('message', message => {
                 if (i.symbol == command) {
                     //console.log(i)
                     //console.log(`Crypto = ${i.symbol} and current price is: ${i.quote.USD.price.toFixed(2)}`);
-                    
+
+                    const setMessageEmbed = new Discord.MessageEmbed();
+                    setMessageEmbed
+                        .setColor('#0099ff')
+                        .setTitle('Current Price');
+                        
+                    message.channel.send(setMessageEmbed);
                     message.channel.send(`Crypto = ${i.symbol} and current price is: $${i.quote.USD.price.toFixed(2)} USD`)
                 } //else {
                     //message.channel.send('Not Found.. Please Try Again :)');
